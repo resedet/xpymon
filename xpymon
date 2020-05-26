@@ -81,11 +81,11 @@ def extract_from_stream(stream, column=0, regexp=None, atype=str):
 def extract_field_from_file(file, column=0, regexp=None, atype=str):
     try:
         f = open(file)
+        return extract_from_stream(f, column=column, regexp=regexp, atype=atype)
     except FileNotFoundError:
         return None
     except OSError:
         return None
-    return extract_from_stream(f, column=column, regexp=regexp, atype=atype)
 
 def extract_field_from_cmd(args, column=0, regexp=None, atype=str):
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)
