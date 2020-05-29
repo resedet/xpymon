@@ -148,7 +148,7 @@ class Monitor():
         # exclude loopback inteface and bridges
         iface, addr = parse_cmd_output(['/bin/ip', '-oneline', 'addr'],
                                        patterns,
-                                       ignore=r'(127.0.0.1|::1/128|\bbr\d+\b)')
+                                       ignore=r'(127.0.0.1|::1/128|\bbr\d+\b|docker0)')
         # reset statistics when interface is changed
         if iface and iface != self.last_iface:
             self.last_iface = iface
