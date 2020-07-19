@@ -316,8 +316,9 @@ class Monitor():
         video status with the wall clock."""
         stats = []
         iface, addr = self.detect_iface()
-        if iface.startswith('wlan') or iface.startswith('wlp'):
-            stats.append(self.compose_wifi_status(iface, addr))
+        if iface:
+            if iface.startswith('wlan') or iface.startswith('wlp'):
+                stats.append(self.compose_wifi_status(iface, addr))
             stats.append(self.compose_net_status(iface, addr))
         stats.append(self.compose_power_status())
         stats.append(self.compose_cpu_status())
