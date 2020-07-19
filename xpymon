@@ -316,7 +316,7 @@ class Monitor():
         video status with the wall clock."""
         stats = []
         iface, addr = self.detect_iface()
-        if iface:
+        if iface.startswith('wlan') or iface.startswith('wlp'):
             stats.append(self.compose_wifi_status(iface, addr))
             stats.append(self.compose_net_status(iface, addr))
         stats.append(self.compose_power_status())
@@ -343,7 +343,7 @@ def do_tests():
     mon = Monitor()
     iface, addr = mon.detect_iface()
     print('iface', iface, addr)
-    if iface:
+    if 'wlan' in iface:
         print(mon.wifi_status('wlan0'))
         print(mon.net_status('wlan0'))
     print(mon.battery_status())
