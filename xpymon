@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/python3.7
 #
 # A versatile WiFi/network/battery/CPU/video system monitor on Linux.
 # Copyright (c) 2018-2019, Hiroyuki Ohsaki.
@@ -32,9 +32,9 @@ import x11util
 # definition of text colors; each pair is the remaining battery
 # percentage and the color name
 COLOR_TBL = (
-    (100, 'aquamarine1'),
-    (75, 'aquamarine2'),
-    (50, 'aquamarine3'),
+    (100, 'LightSteelBlue'),
+    (75, 'LightSteelBlue'),
+    (50, 'LightSteelBlue'),
     (25, 'orange'),
 )
 
@@ -81,11 +81,9 @@ def extract_from_stream(stream, column=0, regexp=None, atype=str):
 def extract_field_from_file(file, column=0, regexp=None, atype=str):
     try:
         f = open(file)
-        return extract_from_stream(f, column=column, regexp=regexp, atype=atype)
     except FileNotFoundError:
         return None
-    except OSError:
-        return None
+    return extract_from_stream(f, column=column, regexp=regexp, atype=atype)
 
 def extract_field_from_cmd(args, column=0, regexp=None, atype=str):
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -148,7 +146,7 @@ class Monitor():
         # exclude loopback inteface and bridges
         iface, addr = parse_cmd_output(['/bin/ip', '-oneline', 'addr'],
                                        patterns,
-                                       ignore=r'(127.0.0.1|::1/128|\bbr\d+\b|docker0)')
+                                       ignore=r'(127.0.0.1|::1/128|\bbr\d+\b)')
         # reset statistics when interface is changed
         if iface and iface != self.last_iface:
             self.last_iface = iface
@@ -257,8 +255,8 @@ class Monitor():
         essid, ap, rate, quality, level, supplicant = self.wifi_status(iface)
         if not essid:
             essid = '--------'
-        if not ap:
-            ap = '--:--:--:--:--'
+        # if not ap:
+        #     ap = '--:--:--:--:--'
         if not rate:
             rate = 0
         if not quality:
@@ -266,8 +264,10 @@ class Monitor():
         if not level:
             level = 0
         supp_mark = '*' if supplicant else ' '
-        return '{:5}{} {:8} {} {:4.1f}M {:5} {:5.1f}dBm'.format(
-            iface, supp_mark, essid, ap, rate, quality, level)
+        # return '{:5}{} {:8} {} {:4.1f}M {:5} {:5.1f}dBm'.format(
+        #     iface, supp_mark, essid, ap, rate, quality, level)
+        return '{:5}{} {:8} {:4.1f}M {:5} {:5.1f}dBm'.format(
+            iface, supp_mark, essid, rate, quality, level)
 
     def compose_net_status(self, iface, addr):
         # IP address might be not assigned yet
@@ -276,8 +276,10 @@ class Monitor():
         tx_rate, rx_rate = self.net_status(iface)
         tx_base, tx_unit = convert_to_si_unit(tx_rate)
         rx_base, rx_unit = convert_to_si_unit(rx_rate)
-        return '{:5} {:15} TX{:5.2f}{} RX{:5.2f}{}'.format(
-            iface, addr, tx_base, tx_unit, rx_base, rx_unit)
+        # return '{:5} {:15}TX{:5.2f}{} RX{:5.2f}{}'.format(
+        #     iface, addr, tx_base, tx_unit, rx_base, rx_unit)
+        return '{:15}TX{:5.2f}{} RX{:5.2f}{}'.format(
+            addr, tx_base, tx_unit, rx_base, rx_unit)
 
     def compose_power_status(self):
         ac_online, remain_ratio, remain_secs, consumption = self.battery_status(
@@ -305,11 +307,12 @@ class Monitor():
         if height is None:
             height = 0
         rec_mark = '*' if recording else ' '
-        return '{}{} {}x{}'.format(dev, rec_mark, width, height)
+        return '{}{}{}x{}'.format(dev, rec_mark, width, height)
 
     def compose_clock_string(self):
         clock, second_clock = self.time_string()
-        return '[{}] {}'.format(second_clock, clock)
+        # return '[{}] {}'.format(second_clock, clock)
+        return '{}'.format(clock)    
 
     def status_string(self, cols=80):
         """Return a summary string describing wifi, network, power, CPU, and
@@ -317,8 +320,7 @@ class Monitor():
         stats = []
         iface, addr = self.detect_iface()
         if iface:
-            if iface.startswith('wlan') or iface.startswith('wlp'):
-                stats.append(self.compose_wifi_status(iface, addr))
+            stats.append(self.compose_wifi_status(iface, addr))
             stats.append(self.compose_net_status(iface, addr))
         stats.append(self.compose_power_status())
         stats.append(self.compose_cpu_status())
@@ -344,7 +346,7 @@ def do_tests():
     mon = Monitor()
     iface, addr = mon.detect_iface()
     print('iface', iface, addr)
-    if 'wlan' in iface:
+    if iface:
         print(mon.wifi_status('wlan0'))
         print(mon.net_status('wlan0'))
     print(mon.battery_status())
